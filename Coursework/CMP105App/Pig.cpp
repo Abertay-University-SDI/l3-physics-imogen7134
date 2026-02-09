@@ -34,6 +34,7 @@ Pig::Pig(sf::Vector2f worldSize)
 
 	m_currentAnimation = &m_walkDown;
 	setTextureRect(m_currentAnimation->getCurrentFrame());
+	
 }
 
 Pig::~Pig()
@@ -130,6 +131,8 @@ void Pig::setRandomDirection()
 	}
 }
 
+
+
 void Pig::update(float dt)
 {
     // tick down
@@ -207,4 +210,10 @@ void Pig::update(float dt)
 		}
 	}
 	
+
+}
+
+void Pig::collisionResponse(GameObject& collider)
+{
+	std::cout << "Smashed into sheep\n";
 }

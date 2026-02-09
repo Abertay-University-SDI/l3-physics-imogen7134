@@ -3,12 +3,13 @@
 Level::Level(sf::RenderWindow& hwnd, Input& in) :
 	BaseLevel(hwnd, in)
 {
+
 	// setup background
 	float background_size = 1024;
 	if (!m_backgroundTexture.loadFromFile("gfx/field.png"))
 		std::cerr << "Yikes, no field\n";
 	m_background.setTexture(&m_backgroundTexture);
-	m_background.setSize({ background_size, background_size});
+	m_background.setSize({ background_size, background_size });
 
 	// Setup Sheep.
 	if (!m_sheepTexture.loadFromFile("gfx/sheep_sheet.png"))
@@ -17,6 +18,8 @@ Level::Level(sf::RenderWindow& hwnd, Input& in) :
 	m_sheep.setTexture(&m_sheepTexture);
 	m_sheep.setPosition({ background_size / 2.f, background_size / 2.f });
 	m_sheep.setSize({ 64,64 });
+	m_sheep.setWorldSize(background_size, background_size);
+	m_sheep.setCollisionBox({ {2,2}, {60,60} });
 
 	// Setup pigs.
 	std::vector<sf::Vector2f> pig_locations = {	// top corners and bottom middle
@@ -32,8 +35,10 @@ Level::Level(sf::RenderWindow& hwnd, Input& in) :
 		new_pig->setTexture(&m_pigTexture);
 		new_pig->setSize({ 64, 64 });
 		new_pig->setPosition(pig_locations[i]);	
+		new_pig->setCollisionBox({ {2,2},{60,60} });
 		m_pigPointers.push_back(new_pig);
 	}
+	
 	
 	m_gameOver = false;	// haven't lost yet.
 
@@ -64,11 +69,27 @@ void Level::update(float dt)
 	// keep the sheep centered
 	sf::Vector2f pos = m_sheep.getPosition();
 	sf::View view = m_window.getView();
+	
+	// check and shake
+	if (m_shakeTimer > 0.f)
+	{
+		pos.x += (rand() % SHAKE_INTENSITY) - SHAKE_INTENSITY / 2.f;
+		pos.y += (rand() % SHAKE_INTENSITY) - SHAKE_INTENSITY / 2.f;
+		m_shakeTimer -= dt; // tick down timer
+	}
 	view.setCenter(pos);
 	m_window.setView(view);
-
 	m_sheep.update(dt);
-	for (auto pig : m_pigPointers) pig->update(dt);
+	for (auto pig : m_pigPointers)
+	{
+		if (Collision::checkBoundingBox(*pig, m_sheep))
+		{
+			pig->collisionResponse(m_sheep);
+			m_sheep.collisionResponse(*pig);
+			m_shakeTimer = SHAKE_TIME; // reset shake clock
+		}
+		pig->update(dt);
+	}
 }
 
 // Render level

@@ -4,6 +4,7 @@
 #include "Framework/GameObject.h"
 #include "Pig.h"
 #include "Sheep.h"
+#include "Framework/Collision.h"
 
 class Level : BaseLevel {
 public:
@@ -19,6 +20,9 @@ private:
 
 	// Default variables for level class.
 	bool m_gameOver;
+	float m_shakeTimer;
+	const float SHAKE_TIME = 0.2f;
+	const int SHAKE_INTENSITY = 10; // must be even
 
 	sf::Texture m_backgroundTexture;
 	GameObject m_background;
